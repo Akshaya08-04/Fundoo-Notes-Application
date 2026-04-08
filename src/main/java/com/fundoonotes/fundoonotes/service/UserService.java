@@ -8,4 +8,5 @@ import com.fundoonotes.fundoonotes.dto.response.UserResponseDto;
 public interface UserService {
     UserResponseDto register(UserRegisterRequestDto requestDto);
     LoginResponseDto login(LoginRequestDto requestDto);
+    String logout(String token);
 }

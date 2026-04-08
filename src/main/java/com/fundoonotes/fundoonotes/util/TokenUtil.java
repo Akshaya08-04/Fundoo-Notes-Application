@@ -17,13 +17,34 @@ public class TokenUtil {
     }
 
     public Long extractUserId(String token) {
-        if (token == null || !token.startsWith("TOKEN_")) {
+        if (token == null) {
+            throw new RuntimeException("Token is missing");
+        }
+
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        if (!token.startsWith("TOKEN_")) {
             throw new RuntimeException("Invalid token");
         }
+
         return Long.parseLong(token.substring(6));
     }
 
     public boolean validateToken(String token) {
-        return token != null && token.startsWith("TOKEN_");
+        if (token == null) {
+            return false;
+        }
+
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        return token.startsWith("TOKEN_");
+    }
+
+    public long getTokenExpirySeconds() {
+        return expirationMs / 1000;
     }
 }

@@ -13,6 +13,7 @@ import com.fundoonotes.fundoonotes.util.TokenUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -120,5 +121,19 @@ public class NoteServiceImpl implements NoteService {
 
         note.setTrashed(true);
         return mapToResponse(noteRepository.save(note));
+    }
+    @Override
+    @Cacheable(value = "notes", key = "#noteId")
+    public NoteResponseDto getNoteById(Long noteId, String token) {
+        User user = findUserFromToken(token);
+
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new NoteNotFoundException("Note not found"));
+
+        if (!note.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("You cannot access this note");
+        }
+
+        return mapToResponse(note);
     }
 }

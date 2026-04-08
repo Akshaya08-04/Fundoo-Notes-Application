@@ -9,6 +9,7 @@ import com.fundoonotes.fundoonotes.exception.InvalidCredentialsException;
 import com.fundoonotes.fundoonotes.exception.UserAlreadyExistsException;
 import com.fundoonotes.fundoonotes.exception.UserNotFoundException;
 import com.fundoonotes.fundoonotes.repository.UserRepository;
+import com.fundoonotes.fundoonotes.service.RedisTokenService;
 import com.fundoonotes.fundoonotes.service.UserService;
 import com.fundoonotes.fundoonotes.util.TokenUtil;
 import org.slf4j.Logger;
@@ -24,11 +25,16 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenUtil tokenUtil;
+    private final RedisTokenService redisTokenService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, TokenUtil tokenUtil) {
+    public UserServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           TokenUtil tokenUtil,
+                           RedisTokenService redisTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenUtil = tokenUtil;
+        this.redisTokenService = redisTokenService;
     }
 
     @Override
@@ -68,5 +74,15 @@ public class UserServiceImpl implements UserService {
 
         String token = tokenUtil.generateToken(user.getId());
         return new LoginResponseDto(token, "Login successful");
+    }
+
+    @Override
+    public String logout(String token) {
+        if (!tokenUtil.validateToken(token)) {
+            throw new RuntimeException("Invalid token");
+        }
+
+        redisTokenService.blacklistToken(token, tokenUtil.getTokenExpirySeconds());
+        return "Logout successful";
     }
 }

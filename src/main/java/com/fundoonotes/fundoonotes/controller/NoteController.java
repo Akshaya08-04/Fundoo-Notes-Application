@@ -53,4 +53,10 @@ public class NoteController {
             @RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(noteService.trashNote(noteId, token));
     }
+    @GetMapping("/{noteId}")
+    public ResponseEntity<NoteResponseDto> getNoteById(
+            @PathVariable Long noteId,
+            @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(noteService.getNoteById(noteId, token));
+    }
 }
